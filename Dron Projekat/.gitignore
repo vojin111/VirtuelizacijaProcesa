@@ -1,0 +1,23 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+
+# Build outputs
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+
+# Logs
+Logs/
+*.log
+
+# Measurements (server output)
+Measurements/
+
+# Rider / VS Code
+.idea/
+.vscode/
