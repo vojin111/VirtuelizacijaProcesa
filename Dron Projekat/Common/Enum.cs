@@ -15,4 +15,11 @@ namespace Common
         [EnumMember] IN_PROGRESS,
         [EnumMember] COMPLETED
     }
+
+    [DataContract]
+    public enum DeviationDirection
+    {
+        [EnumMember] AboveExpected,
+        [EnumMember] BelowExpected
+    }
 }
