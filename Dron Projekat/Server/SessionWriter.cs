@@ -9,10 +9,15 @@ namespace Server
     {
         private FileStream measurementsFs;
         private StreamWriter measurementsWriter;
+
+        private FileStream rejectsFs;
+        private StreamWriter rejectsWriter;
+
         private bool disposed = false;
 
         public string SessionFolder { get; }
         public string MeasurementsPath { get; }
+        public string RejectsPath { get; }
 
         public SessionWriter(string baseFolder, string datasetName)
         {
@@ -26,26 +31,45 @@ namespace Server
             }
 
             MeasurementsPath = Path.Combine(SessionFolder, "measurements_session.csv");
+            RejectsPath = Path.Combine(SessionFolder, "rejects.csv");
 
             measurementsFs = new FileStream(MeasurementsPath, FileMode.Create, FileAccess.Write);
             measurementsWriter = new StreamWriter(measurementsFs);
             measurementsWriter.WriteLine("RowIndex,Time,LinearAccelerationX,LinearAccelerationY," +
                                          "LinearAccelerationZ,WindSpeed,WindAngle");
+
+            rejectsFs = new FileStream(RejectsPath, FileMode.Create, FileAccess.Write);
+            rejectsWriter = new StreamWriter(rejectsFs);
+            rejectsWriter.WriteLine("RowIndex,Time,LinearAccelerationX,LinearAccelerationY," +
+                                    "LinearAccelerationZ,WindSpeed,WindAngle,Reason");
         }
 
-        public void WriteSample(DroneSample droneSample)
+        public void WriteSample(DroneSample s)
         {
             if (disposed)
                 throw new ObjectDisposedException("SessionWriter");
 
             string line = string.Format(CultureInfo.InvariantCulture,
-                "{0},{1},{2},{3},{4},{5},{6}",
-                droneSample.RowIndex, droneSample.Time,
-                droneSample.LinearAccelerationX, droneSample.LinearAccelerationY, droneSample.LinearAccelerationZ,
-                droneSample.WindSpeed, droneSample.WindAngle);
+                "{0},{1},{2},{3},{4},{5},{6}", s.RowIndex, s.Time,
+                s.LinearAccelerationX, s.LinearAccelerationY, s.LinearAccelerationZ,
+                s.WindSpeed, s.WindAngle);
 
             measurementsWriter.WriteLine(line);
             measurementsWriter.Flush();
+        }
+
+        public void WriteReject(DroneSample s, string reason)
+        {
+            if (disposed)
+                throw new ObjectDisposedException("SessionWriter");
+
+            string line = string.Format(CultureInfo.InvariantCulture,
+                "{0},{1},{2},{3},{4},{5},{6},{7}",s.RowIndex, s.Time,
+                s.LinearAccelerationX, s.LinearAccelerationY, s.LinearAccelerationZ,
+                s.WindSpeed, s.WindAngle, reason);
+
+            rejectsWriter.WriteLine(line);
+            rejectsWriter.Flush();
         }
 
         public void Dispose()
@@ -56,32 +80,61 @@ namespace Server
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
+            if (disposed) 
                 return;
 
             if (disposing)
             {
-                try
-                {
-                    if (measurementsWriter != null)
-                    {
-                        measurementsWriter.Flush();
-                        measurementsWriter.Dispose();
-                    }
+                try 
+                { 
+                    if (measurementsWriter != null) 
+                    { 
+                        measurementsWriter.Flush(); 
+                        measurementsWriter.Dispose(); 
+                    } 
                 }
-                catch (Exception ex)
-                { Console.WriteLine("[Dispose] measurementsWriter: " + ex.Message); }
+                catch (Exception ex) 
+                { 
+                    Console.WriteLine("[Dispose] measurementsWriter: " + ex.Message); 
+                }
 
-                try
-                {
-                    if (measurementsFs != null)
-                        measurementsFs.Dispose();
+                try 
+                { 
+                    if (measurementsFs != null) 
+                        measurementsFs.Dispose(); 
                 }
-                catch (Exception ex)
-                { Console.WriteLine("[Dispose] measurementsFs: " + ex.Message); }
+                catch (Exception ex) 
+                { 
+                    Console.WriteLine("[Dispose] measurementsFs: " + ex.Message); 
+                }
+
+                try 
+                { 
+                    if (rejectsWriter != null) 
+                    { 
+                        rejectsWriter.Flush(); 
+                        rejectsWriter.Dispose(); 
+                    } 
+                }
+                catch (Exception ex) 
+                { 
+                    Console.WriteLine("[Dispose] rejectsWriter: " + ex.Message); 
+                }
+
+                try 
+                {
+                    if (rejectsFs != null) 
+                        rejectsFs.Dispose(); 
+                }
+                catch (Exception ex) 
+                { 
+                    Console.WriteLine("[Dispose] rejectsFs: " + ex.Message); 
+                }
 
                 measurementsWriter = null;
                 measurementsFs = null;
+                rejectsWriter = null;
+                rejectsFs = null;
             }
 
             disposed = true;
